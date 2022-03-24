@@ -32,7 +32,7 @@ def LPFtrunc(N):
 
 
 # main function for part a
-def part_a():
+def part_a1():
 
     # use LPFtrunc(N) to generate an impulse response for N=21 and N=101
     # compute the DTFT and plot the magnitude response normalized and in dB
@@ -56,11 +56,11 @@ def part_a():
         plt.plot(w, 20*np.log10(np.abs(H)))
         plt.title(r'$|H(e^{j\omega})|$, N=%d' % (N))
         plt.xlabel(r'$\omega$')
-        plt.ylabel('db')
+        plt.ylabel('dB')
         plt.show()
 
 # main function for part b
-def part_b():
+def part_a2():
 
     # read in noisy speech file
     noisy_speech = scipy.io.loadmat('Project1/nspeech2.mat')['nspeech2'].flatten()
@@ -80,6 +80,6 @@ def part_b():
 
 
 if __name__ == "__main__":
-    part_b()
+    part_a1()
 
 
