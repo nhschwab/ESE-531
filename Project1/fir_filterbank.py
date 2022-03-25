@@ -6,45 +6,51 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import firwin as firwin
 from scipy.signal import freqz as freqz
+from scipy.signal import resample as resample
 
 '''
-downsample(x, m)
+filt_and_down(x, h, m)
 
 arguments:
 
     x: input signal
+
+    h: impulse response
 
     m: downsampling rate
 
 return:
 
-    y: downsampled signal
-
+    y: filtered and downsampled signal
 '''
-def downsample(x, m):
+def filt_and_down(x, h, m):
 
-    y = np.array([x[i] for i in np.arange(0, len(x), m)])
+    N = len(x)
+    M = len(h)
+    y = resample(np.convolve(h, x), num=int((N+M-1)/2))
 
     return y
 
 '''
-upsample(x, l):
+up_and_filt(x, h, l)
 
 arguments:
 
     x: input signal
 
-    m: upsampling rate
+    h: impulse response
+
+    l: upsampling rate
 
 return:
 
-    y: upsampled signal
-
+    y: upsampled and filtered signal
 '''
-def upsample(x, l):
+def up_and_filt(x, h, l):
 
-    h = np.sinc([i / l for i in range(len(x))])
-    y = np.convolve(x, h)
+    N = len(x)
+    M = len(h)
+    y = np.convolve(h, resample(x, num=(N+M-1)*2))
 
     return y
 
@@ -59,14 +65,14 @@ return:
 
     y: perfectly reconstructed signal
 '''
-def pr_fb():
+def pr_fb(x):
 
     # first design h0, the impulse response of a low-pass filter which passes
     # frequncies 0 to pi/2
 
     fs = 2 * np.pi
     cutoff = np.pi / 2
-    numtaps = 19 # must be odd to be Type I FIR Filter
+    numtaps = 101 # must be odd to be Type I FIR Filter
 
     # low-pass FIR filter using Hamming window
     h0 = firwin(numtaps, cutoff, fs=fs)
@@ -104,11 +110,36 @@ def pr_fb():
     plt.show()
 
     # apply filters in cascade to reconstruct signal
-    v0 = 
+    v1 = filt_and_down(filt_and_down(filt_and_down(x, h0, 2), h0, 2), h0, 2) 
+    v2 = filt_and_down(filt_and_down(filt_and_down(x, h0, 2), h0, 2), h1, 2)
+    v3 = filt_and_down(filt_and_down(x, h0, 2), h1, 2)
+    v4 = filt_and_down(x, h1, 2) 
 
+    '''plt.plot(v1)
+    plt.show()
+    plt.plot(v2)
+    plt.show()
+    plt.plot(v3)
+    plt.show()
+    plt.plot(v4)
+    plt.show()'''
+
+    y1 = up_and_filt(v1, g0, 2)
+    y2 = up_and_filt(v2, g1, 2)
+    y12 = y1 + y2
+
+    y3 = up_and_filt(v3, g1, 2)
+    y123 = y3 + up_and_filt(y12, g0, 2)
+    
+    # y = up_and_filt(up_and_filt(( + , g0, 2) + up_and_filt(v3, g1, 2), g1, 2) + up_and_filt(v4, g1, 2)
+    #plt.plot(y)
+    #plt.show()
 
     return 
 
 
 if __name__ == "__main__":
-    pr_fb()
+    x = np.sin([8 * np.pi * t for t in np.linspace(0, 10, 1000)])
+    plt.plot(x)
+    plt.show()
+    pr_fb(x)
