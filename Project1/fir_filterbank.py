@@ -27,7 +27,7 @@ def filt_and_down(x, h, m):
 
     N = len(x)
     M = len(h)
-    y = resample(np.convolve(h, x), num=int((N+M-1)/2))
+    y = resample(np.convolve(h, x, mode='same'), num=int(N/m))
 
     return y
 
@@ -50,7 +50,7 @@ def up_and_filt(x, h, l):
 
     N = len(x)
     M = len(h)
-    y = np.convolve(h, resample(x, num=(N+M-1)*2))
+    y = np.convolve(h, resample(x, num=l*N), mode='full')
 
     return y
 
@@ -70,9 +70,9 @@ def pr_fb(x):
     # first design h0, the impulse response of a low-pass filter which passes
     # frequncies 0 to pi/2
 
-    fs = 2 * np.pi
+    fs = 2*np.pi
     cutoff = np.pi / 2
-    numtaps = 101 # must be odd to be Type I FIR Filter
+    numtaps = 50 # must be odd to be Type I FIR Filter
 
     # low-pass FIR filter using Hamming window
     h0 = firwin(numtaps, cutoff, fs=fs)
@@ -125,21 +125,31 @@ def pr_fb(x):
     plt.show()'''
 
     y1 = up_and_filt(v1, g0, 2)
+    plt.plot(y1)
+    plt.show()
     y2 = up_and_filt(v2, g1, 2)
+    plt.plot(y2)
+    plt.show()
     y12 = y1 + y2
-
     y3 = up_and_filt(v3, g1, 2)
+    plt.plot(y3)
+    plt.show()
     y123 = y3 + up_and_filt(y12, g0, 2)
+
+    y4 = up_and_filt(v4, g1, 2)
+    plt.plot(y4)
+    plt.show()
     
-    # y = up_and_filt(up_and_filt(( + , g0, 2) + up_and_filt(v3, g1, 2), g1, 2) + up_and_filt(v4, g1, 2)
-    #plt.plot(y)
-    #plt.show()
+    y = y123 + y4
+    plt.plot(y)
+    plt.plot(x)
+    plt.show()
 
     return 
 
 
 if __name__ == "__main__":
-    x = np.sin([8 * np.pi * t for t in np.linspace(0, 10, 1000)])
+    x = np.sin([.2 * np.pi * t for t in np.arange(0, 100)]) + np.sin([.8 * np.pi * t for t in np.arange(0, 100)])
     plt.plot(x)
     plt.show()
     pr_fb(x)
