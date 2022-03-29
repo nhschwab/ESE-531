@@ -65,6 +65,16 @@ def part_a2():
     # read in noisy speech file
     noisy_speech = scipy.io.loadmat('Project1/nspeech2.mat')['nspeech2'].flatten()
 
+    noisy_speech_spec = np.roll(np.fft.fft(noisy_speech, 512), int(512/2))
+    w = np.linspace(-np.pi, np.pi, 512)
+
+    # plot noisy speech
+    plt.plot(w, noisy_speech_spec)
+    plt.title('Noisy Speech Spectrum')
+    plt.xlabel('w')
+    plt.ylabel(r'$|X(e^{j\omega})|$')
+    plt.show()
+
     # generate two LPF impulse responses
     h21 = LPFtrunc(21)
     h101 = LPFtrunc(101)
@@ -73,6 +83,21 @@ def part_a2():
     filtered_speech21 = np.convolve(noisy_speech, h21)   
     filtered_speech101 = np.convolve(noisy_speech, h101)
 
+    # plot the filtered speech
+    filtered_speech21_spec = np.roll(np.fft.fft(filtered_speech21, 512), int(512/2))
+    plt.plot(w, np.abs(filtered_speech21_spec))
+    plt.title('Filtered Speech Spectrum (N=21)')
+    plt.xlabel('w')
+    plt.ylabel(r'$|X(e^{j\omega})|$')
+    plt.show()
+
+    filtered_speech101_spec = np.roll(np.fft.fft(filtered_speech101, 512), int(512/2))
+    plt.plot(w, np.abs(filtered_speech101_spec))
+    plt.title('Filtered Speech Spectrum (N=101)')
+    plt.xlabel('w')
+    plt.ylabel(r'$|X(e^{j\omega})|$')
+    plt.show()
+
     # write the speech to .wav files
     write('noisy_speech.wav', 10000, 3*noisy_speech)
     write('filtered_speech21.wav', 10000, 3*filtered_speech21) 
@@ -80,6 +105,6 @@ def part_a2():
 
 
 if __name__ == "__main__":
-    part_a1()
+    part_a2()
 
 
