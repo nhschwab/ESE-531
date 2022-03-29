@@ -21,7 +21,7 @@ def part_b():
     delta_s = 0.005
 
     # numtaps, parameter should be altered until optimized
-    numtaps = 43
+    numtaps = 30
 
     # array of frequencies
     bands = [0, omega_p, omega_s, np.pi]
@@ -29,8 +29,11 @@ def part_b():
     # desired values in frequency ranges
     des_response = [1, 0]
 
+    # weighting
+    wgt = [delta_s/delta_p, 1]
+
     # use Parks-McClellan algo to compute impulse response of filter
-    h = remez(numtaps, bands, des_response, fs=fs)
+    h = remez(numtaps, bands, des_response, weight=wgt, fs=fs)
 
     # compute DTFT of h
     w, H = freqz(h, [1], whole=True)

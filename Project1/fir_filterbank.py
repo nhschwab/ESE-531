@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from scipy.signal import firwin as firwin
 from scipy.signal import freqz as freqz
 from scipy.signal import resample as resample
+from scipy.signal import butter, lfilter, dlti, dimpulse
 
 '''
 filt_and_down(x, h, m)
@@ -50,7 +51,7 @@ def up_and_filt(x, h, l):
 
     N = len(x)
     M = len(h)
-    y = np.convolve(h, resample(x, num=l*N), mode='full')
+    y = np.convolve(h, resample(x, num=l*N), mode='same')
 
     return y
 
@@ -75,8 +76,10 @@ def pr_fb(x):
     numtaps = 50 # must be odd to be Type I FIR Filter
 
     # low-pass FIR filter using Hamming window
+    # _, h0 = dimpulse(dlti(*butter(N=numtaps, Wn=cutoff, fs=fs)), n=numtaps)
+    # h0 =np.squeeze(h0)
     h0 = firwin(numtaps, cutoff, fs=fs)
-    _, H0 = freqz(h0, [1], worN=512, whole=True)
+    w, H0 = freqz(h0, [1], worN=512, whole=True)
     H0 = np.roll(H0, int(512/2))
     w = np.linspace(-np.pi, np.pi, 512)
     plt.plot(w, np.abs(H0), label=r'$|H_{0}(e^{j\omega})|$')
@@ -93,8 +96,8 @@ def pr_fb(x):
     plt.show()
 
     # define synthesis filters
-    g0 = 2 * h0
-    g1 = -2 * h1
+    g0 = h0
+    g1 = h1
 
     _, G0 = freqz(g0, [1], worN=512, whole=True)
     G0 = np.roll(G0, int(512/2))
@@ -110,46 +113,62 @@ def pr_fb(x):
     plt.show()
 
     # apply filters in cascade to reconstruct signal
-    v1 = filt_and_down(filt_and_down(filt_and_down(x, h0, 2), h0, 2), h0, 2) 
-    v2 = filt_and_down(filt_and_down(filt_and_down(x, h0, 2), h0, 2), h1, 2)
-    v3 = filt_and_down(filt_and_down(x, h0, 2), h1, 2)
-    v4 = filt_and_down(x, h1, 2) 
+    v1 = np.roll(filt_and_down(filt_and_down(filt_and_down(x, h0, 2), h0, 2), h0, 2), 700)
+    v2 = np.roll(filt_and_down(filt_and_down(filt_and_down(x, h0, 2), h0, 2), h1, 2), 700)
+    v3 = np.roll(filt_and_down(filt_and_down(x, h0, 2), h1, 2), 400)
+    v4 = np.roll(filt_and_down(x, h1, 2), 50)
 
-    '''plt.plot(v1)
+    plt.stem(v1)
+    plt.title('Lower 1/8 Band')
+    plt.xlabel('n')
+    plt.ylabel(r'$v_1[n]$')
     plt.show()
-    plt.plot(v2)
+
+    plt.stem(v2)
+    plt.title('Second 1/8 Band')
+    plt.xlabel('n')
+    plt.ylabel(r'$v_2[n]$')
     plt.show()
-    plt.plot(v3)
+
+    plt.stem(v3)
+    plt.title('Intermediate-Frequency Band')
+    plt.xlabel('n')
+    plt.ylabel(r'$v_3[n]$')
     plt.show()
-    plt.plot(v4)
-    plt.show()'''
+
+    plt.stem(v4)
+    plt.title('High-Frequency Band')
+    plt.xlabel('n')
+    plt.ylabel(r'$v_4[n]$')
+    plt.show()
+
+    # upsample and synthesize the sub-bands
 
     y1 = up_and_filt(v1, g0, 2)
-    plt.plot(y1)
-    plt.show()
     y2 = up_and_filt(v2, g1, 2)
-    plt.plot(y2)
-    plt.show()
     y12 = y1 + y2
+
     y3 = up_and_filt(v3, g1, 2)
-    plt.plot(y3)
-    plt.show()
     y123 = y3 + up_and_filt(y12, g0, 2)
 
     y4 = up_and_filt(v4, g1, 2)
-    plt.plot(y4)
-    plt.show()
     
-    y = y123 + y4
-    plt.plot(y)
-    plt.plot(x)
+    y = up_and_filt(y123, g0, 2) + y4
+
+    plt.stem(np.roll(y, 92), markerfmt='ro', basefmt='r-')
+    plt.title('Reconstructed Signal')
+    plt.xlabel('n')
+    plt.ylabel('y[n]')
     plt.show()
 
     return 
 
 
 if __name__ == "__main__":
-    x = np.sin([.2 * np.pi * t for t in np.arange(0, 100)]) + np.sin([.8 * np.pi * t for t in np.arange(0, 100)])
-    plt.plot(x)
+    x = np.sin([.02 * np.pi * n for n in np.arange(0, 200)]) + np.sin([0.2 * np.pi * n for n in np.arange(0, 200)])
+    plt.stem(x)
+    plt.title('Input Signal')
+    plt.xlabel('n')
+    plt.ylabel('x[n]')
     plt.show()
     pr_fb(x)
