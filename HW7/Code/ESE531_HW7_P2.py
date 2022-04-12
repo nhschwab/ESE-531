@@ -110,6 +110,9 @@ def main():
     # test signal
     N = 1000
     x = np.cos([np.pi * n / 100 for n in range(N)])
+    plt.title('Test Signal')
+    plt.xlabel('n')
+    plt.ylabel('x[n]')
     plt.stem(x)
     plt.show()
 
