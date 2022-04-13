@@ -9,7 +9,7 @@ import numpy as np
 
 # analytical expressision for DTFT of x[n]
 w = np.arange(0, 2 * np.pi, 0.01)
-X = np.array([1 / (1 - 0.7 * np.exp(1j * i)) for i in w])
+X = np.array([(1 - (0.7 * np.exp(-1j * i)) ** 8) / (1 - 0.7 * np.exp(-1j * i)) for i in w])
 
 
 # plot the magntiude and phase of DTFT
