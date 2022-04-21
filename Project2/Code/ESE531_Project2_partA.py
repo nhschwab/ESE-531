@@ -273,10 +273,8 @@ def part3():
     plt.plot(s2)
     plt.show()
 
-
-
     return None
 
 
 if __name__ == "__main__":
-    part1()
+    part3()
