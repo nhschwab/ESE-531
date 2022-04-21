@@ -4,6 +4,7 @@
 # import libraries
 import numpy as np
 import matplotlib.pyplot as plt 
+from scipy.signal import freqz as freqz
 
 # function for first part of Part A
 def part1():
@@ -12,10 +13,10 @@ def part1():
     t = np.arange(0, 20, 0.01)
 
     # define input signal and noise signal
-    w = 3 * 2 * np.pi
-    w_noise = 21 * 2 * np.pi 
+    w = 2 * np.pi
+    w_noise = 6 * 2 * np.pi 
 
-    x_noise = 15 * np.cos(w_noise * t)
+    x_noise = 2 * np.cos(w_noise * t)
     x = np.cos(w * t)
     input = x + x_noise
 
@@ -74,6 +75,34 @@ def part1():
     plt.ylabel('a')
     plt.show()
 
+    # plot spectra of corrupted signal, frequency response of adpated filter, and spectra of the cleaned signal
+    X = np.fft.fft(input)
+    w = np.linspace(-np.pi, np.pi, len(X))
+    plt.plot(w, X)
+    plt.title('Corrupted Signal')
+    plt.ylabel(r'$X(e^{j \omega})$')
+    plt.xlabel(r'$\omega$')
+    plt.show()
+
+    # define numerator and denominator parameters of the notch filter
+    num = [1, a[-1], 1]
+    den = [1, r * a[-1], r**2]
+
+    _, h = freqz(num, den, whole=True)
+    omega = np.linspace(-np.pi, np.pi, len(h))
+    plt.plot(omega, h)
+    plt.title('Frequency Response of Adaptive Notch Filter After Last Iteration')
+    plt.ylabel(r'$H(e^{j \omega})$')
+    plt.xlabel(r'$\omega$')
+    plt.show()
+
+    Y = np.fft.fft(f)
+    plt.plot(w, Y)
+    plt.title('Clean Signal')
+    plt.ylabel(r'$Y(e^{j \omega})$')
+    plt.xlabel(r'$\omega$')
+    plt.show()
+
     return None
 
 # function for second part of Part A
@@ -126,6 +155,8 @@ def part2():
             a[n] = 0
 
         f[n] = x[n] + y[n]
+
+    # plot results
 
     plt.plot(f, label='Desired Signal Plus Filtered Input')
     plt.plot(x, label='Desired Signal')
@@ -248,4 +279,4 @@ def part3():
 
 
 if __name__ == "__main__":
-    part2()
+    part1()
