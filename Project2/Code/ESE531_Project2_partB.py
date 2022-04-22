@@ -37,29 +37,32 @@ def main():
     d = np.pad(s, (2,0))[:-2]
 
     # learning parameters
-    mu = 0.0005
+    mu = 0.005
     M = 20
 
     # initialize empty filter of length M+1
-    g = np.zeros(M+1)
+    g = np.ones(M)
 
-    for n in range(10):
-
+    for n in range(1000-M):
+        
         # pass the channel output through the adaptive filter
-        y = np.convolve(x, g, mode='same')
-
+        y = np.array([g[j] * sum(x[n: n + M]) for j in range(M)])
+        y = np.pad(y, (n, 1000-M-n))
         # execute parameter update via LMS
-        e = d - y
-        g = g + 2 * mu * e @ x
-        print(g)
+        e = d[n] - y[n]
+        g = g + 2 * mu * e * x[n: n + M]
+       
 
-    plt.plot(s, '.')
-    plt.show()
+    # plt.plot(s, '.')
+    # # plt.show()
 
-    plt.plot(x, '.')
-    plt.show()
+    # plt.plot(x, '.')
+    # plt.show()
 
-    plt.plot(np.convolve(x, g), '.')
+    # plt.plot(np.sign(np.convolve(x, g, mode='same')), '.')
+    # plt.show()
+
+    plt.plot(np.abs(d - np.convolve(x, g, mode='same')))
     plt.show()
 
 
