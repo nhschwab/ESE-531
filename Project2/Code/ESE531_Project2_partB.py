@@ -20,8 +20,8 @@ def main():
     h = np.array([0.3, 1, 0.7, 0.3, 0.2])
 
     # compute convolution and generate random gaussian noise 
-    x = np.convolve(s, h)
-    
+    x = np.convolve(s, h, mode='same')
+
     target_snr_db = 20
     x_avg_db = np.mean(10 * np.log10(x**2))
     noise_avg_db = x_avg_db - target_snr_db
@@ -32,7 +32,35 @@ def main():
 
     # now implement the adaptive equalizer
 
-    
+    # the desired signal will b a delayed version of the original signal
+    # delay by two units
+    d = np.pad(s, (2,0))[:-2]
+
+    # learning parameters
+    mu = 0.0005
+    M = 20
+
+    # initialize empty filter of length M+1
+    g = np.zeros(M+1)
+
+    for n in range(10):
+
+        # pass the channel output through the adaptive filter
+        y = np.convolve(x, g, mode='same')
+
+        # execute parameter update via LMS
+        e = d - y
+        g = g + 2 * mu * e @ x
+        print(g)
+
+    plt.plot(s, '.')
+    plt.show()
+
+    plt.plot(x, '.')
+    plt.show()
+
+    plt.plot(np.convolve(x, g), '.')
+    plt.show()
 
 
 if __name__ == "__main__":
