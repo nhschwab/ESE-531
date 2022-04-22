@@ -37,7 +37,7 @@ def main():
     d = np.pad(s, (2,0))[:-2]
 
     # learning parameters
-    mu = 0.005
+    mu = 0.01
     M = 20
 
     # initialize empty filter of length M+1
@@ -46,10 +46,10 @@ def main():
     for n in range(1000-M):
         
         # pass the channel output through the adaptive filter
-        y = np.array([g[j] * sum(x[n: n + M]) for j in range(M)])
-        y = np.pad(y, (n, 1000-M-n))
+        y = np.inner(g, x[n: n + M])
+
         # execute parameter update via LMS
-        e = d[n] - y[n]
+        e = d[n] - y
         g = g + 2 * mu * e * x[n: n + M]
        
 
