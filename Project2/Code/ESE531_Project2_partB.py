@@ -23,7 +23,7 @@ def main():
     x = np.convolve(s, h, mode='same')
 
     target_snr_db = 20
-    x_avg_db = np.mean(10 * np.log10(x**2))
+    x_avg_db = 10 * np.log10(np.mean(x)**2)
     noise_avg_db = x_avg_db - target_snr_db
     noise_avg_pwr = 10 ** (noise_avg_db / 10)
     w = np.random.normal(loc=0, scale=np.sqrt(noise_avg_pwr), size=len(x))
@@ -37,20 +37,24 @@ def main():
     d = np.pad(s, (2,0))[:-2]
 
     # learning parameters
-    mu = 0.01
+    mu = 0.0075
     M = 20
 
     # initialize empty filter of length M+1
     g = np.ones(M)
 
-    for n in range(1000-M):
+    # error array
+    e_array = []
+
+    for n in range(M,1000):
         
         # pass the channel output through the adaptive filter
-        y = np.inner(g, x[n: n + M])
+        y = np.inner(g, np.flip(x[n-M:n]))
 
         # execute parameter update via LMS
         e = d[n] - y
-        g = g + 2 * mu * e * x[n: n + M]
+        e_array.append(e)
+        g = g + 2 * mu * e * np.flip(x[n-M:n])
        
 
     # plt.plot(s, '.')
@@ -61,8 +65,10 @@ def main():
 
     # plt.plot(np.sign(np.convolve(x, g, mode='same')), '.')
     # plt.show()
-
-    plt.plot(np.abs(d - np.convolve(x, g, mode='same')))
+    # plt.plot(d)
+    # plt.plot(x)
+    # plt.plot(np.abs(d - np.convolve(np.convolve(s, h, mode='same'), g, mode='same')))
+    plt.plot(np.abs(e_array))
     plt.show()
 
 
