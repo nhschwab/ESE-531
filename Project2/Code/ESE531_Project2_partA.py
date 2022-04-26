@@ -283,4 +283,4 @@ def part3():
 
 
 if __name__ == "__main__":
-    part3()
+    part2()
